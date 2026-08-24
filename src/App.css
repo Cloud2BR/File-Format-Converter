@@ -135,6 +135,40 @@
   flex: 0 0 auto;
 }
 
+.mode-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.mode-selector__option {
+  min-height: 88px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.mode-selector__option:hover {
+  border-color: var(--accent);
+}
+.mode-selector__option--active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+.mode-selector__option strong {
+  font-size: 0.95rem;
+}
+.mode-selector__option span {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
 /* ---- Dropzone ---- */
 .dropzone {
   border: 2px dashed var(--border-strong);
@@ -271,6 +305,57 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+.compression-panel {
+  margin-top: 6px;
+}
+.compression-panel__intro,
+.compression-panel__hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.compression-ranges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.compression-target {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 18px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.compression-target input {
+  width: 120px;
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+.compression-target select {
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+@media (max-width: 560px) {
+  .mode-selector {
+    grid-template-columns: 1fr;
+  }
+  .compression-target {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .compression-target input {
+    width: 100%;
+  }
 }
 
 /* ---- Buttons ---- */

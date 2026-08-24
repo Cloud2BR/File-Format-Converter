@@ -30,6 +30,12 @@ import {
   textToPptx,
 } from './text';
 import { htmlToMarkdown } from './html';
+import {
+  compressImage,
+  imageToJpg,
+  imageToPng,
+  imageToWebp,
+} from './compression';
 
 /** All available conversion routes keyed by source format. */
 export const ROUTES: Partial<Record<FormatId, ConversionRoute[]>> = {
@@ -61,6 +67,18 @@ export const ROUTES: Partial<Record<FormatId, ConversionRoute[]>> = {
   ],
   csv: [{ target: 'json', handler: csvToJson }],
   json: [{ target: 'csv', handler: jsonToCsv }],
+  jpg: [
+    { target: 'png', handler: imageToPng },
+    { target: 'webp', handler: imageToWebp },
+  ],
+  png: [
+    { target: 'jpg', handler: imageToJpg },
+    { target: 'webp', handler: imageToWebp },
+  ],
+  webp: [
+    { target: 'jpg', handler: imageToJpg },
+    { target: 'png', handler: imageToPng },
+  ],
 };
 
 /** Targets available for a given source format. */
@@ -94,3 +112,4 @@ export async function convert(
 
 export { FORMATS, detectFormat, getBaseName };
 export type { ConversionResult, FormatId };
+export { compressImage };

@@ -5,7 +5,7 @@ Atlanta, USA
 [![GitHub](https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff)](https://github.com/)
 [Cloud2BR OSS - Learning Hub](https://github.com/Cloud2BR-MSFTLearningHub)
 
-Last updated: 2026-06-10
+Last updated: 2026-08-24
 
 ----------
 
@@ -17,8 +17,8 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 
 | Branch | Environment | Description                                                 | URL                                                                                                                                              |
 | ------ | ----------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `main` | Production  | Stable release served at the site root.                     | [https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/](https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/)           |
-| `test` | Staging     | Preview of in-progress work served under the `/test/` path. | [https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/test/](https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/test/) |
+| `main` | Production  | Stable release served at the site root.                     | [File Converter](https://cloud2br.github.io/File-Format-Converter/)
+| `test` | Staging     | Preview of in-progress work served under the `/test/` path. | [File Converter Test](https://cloud2br.github.io/File-Format-Converter/test/) |
 
 ## Supported conversions
 
@@ -31,9 +31,17 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 | Plain text     | Markdown, HTML, PDF, PowerPoint                      |
 | CSV            | JSON                                                 |
 | JSON           | CSV                                                  |
+| JPG, PNG, WebP | JPG, PNG, WebP, or a compressed image with a target size |
 
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.
+>
+> Images have two modes: **Convert format** changes between JPG, PNG, and WebP,
+> while **Compress file size** keeps the original format. Choose maximum quality,
+> balanced, or smallest-file ranges, or provide a target size in KB or MB.
+> Target-size matching is best effort and can reduce image dimensions when quality
+> reduction alone is insufficient. PNG remains lossless; convert it to JPG or WebP
+> when a specific smaller target is required.
 
 ## How it works
 

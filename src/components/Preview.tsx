@@ -7,6 +7,7 @@ interface PreviewProps {
 
 export default function Preview({ result }: PreviewProps) {
   const preview = result.preview;
+  const resultExtension = result.filename.split('.').pop()?.toLowerCase() || 'png';
   if (!preview) {
     return (
       <div className="preview preview--empty">
@@ -38,15 +39,15 @@ export default function Preview({ result }: PreviewProps) {
           <div className="preview__images">
             {preview.urls.map((url, i) => (
               <figure className="preview__page" key={url}>
-                <img src={url} alt={`Page ${i + 1}`} loading="lazy" />
+                <img src={url} alt={preview.urls.length > 1 ? `Page ${i + 1}` : result.filename} loading="lazy" />
                 <figcaption>
-                  <span>Page {i + 1}</span>
+                  <span>{preview.urls.length > 1 ? `Page ${i + 1}` : result.filename}</span>
                   <button
                     type="button"
                     className="btn btn--ghost btn--sm"
-                    onClick={() => saveAs(url, `page-${i + 1}.png`)}
+                    onClick={() => saveAs(url, preview.urls.length > 1 ? `page-${i + 1}.${resultExtension}` : result.filename)}
                   >
-                    Save PNG
+                    Save {resultExtension.toUpperCase()}
                   </button>
                 </figcaption>
               </figure>

@@ -4,30 +4,38 @@ import Header from './components/Header';
 import Dropzone from './components/Dropzone';
 import FormatSelector from './components/FormatSelector';
 import ConvertPanel from './components/ConvertPanel';
+import CompressionPanel from './components/CompressionPanel';
 import Preview from './components/Preview';
 import Footer from './components/Footer';
-import { convert, detectFormat, FORMATS, getRoutes } from './converters';
+import { compressImage, convert, detectFormat, FORMATS, getRoutes } from './converters';
 import type { ConversionResult, FormatId } from './converters/types';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
+  const [imageMode, setImageMode] = useState<'convert' | 'compress'>('convert');
   const [target, setTarget] = useState<FormatId | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConversionResult | null>(null);
-
   const sourceFormat = useMemo<FormatId | null>(
     () => (file ? detectFormat(file.name) : null),
     [file],
   );
+  const isCompressible = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
+  const revokeResultPreview = useCallback(() => {
+    if (result?.preview?.kind === 'images') {
+      result.preview.urls.forEach((url) => URL.revokeObjectURL(url));
+    }
+  }, [result]);
   const routes = useMemo(
     () => (sourceFormat ? getRoutes(sourceFormat) : []),
     [sourceFormat],
   );
 
   const reset = useCallback(() => {
+    setImageMode('convert');
     setTarget(null);
     setError(null);
     setResult(null);
@@ -44,7 +52,7 @@ export default function App() {
       setTarget(available[0]?.target ?? null);
       if (!fmt || !available.length) {
         setError(
-          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, or JSON.`,
+          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, JSON, JPG, PNG, or WebP.`,
         );
       }
     },
@@ -56,10 +64,20 @@ export default function App() {
     reset();
   }, [reset]);
 
+  const handleImageMode = useCallback((mode: 'convert' | 'compress') => {
+    revokeResultPreview();
+    setImageMode(mode);
+    setError(null);
+    setResult(null);
+    setProgress(0);
+    setProgressMessage('');
+  }, [revokeResultPreview]);
+
   const handleConvert = useCallback(async () => {
     if (!file || !target) return;
     setBusy(true);
     setError(null);
+    revokeResultPreview();
     setResult(null);
     setProgress(0);
     setProgressMessage('Starting…');
@@ -76,11 +94,37 @@ export default function App() {
     } finally {
       setBusy(false);
     }
-  }, [file, target]);
+  }, [file, revokeResultPreview, target]);
 
   const handleDownload = useCallback(() => {
     if (result) saveAs(result.blob, result.filename);
   }, [result]);
+
+  const handleCompress = useCallback(
+    async (quality: number, targetSizeBytes: number | null) => {
+      if (!file || !isCompressible) return;
+      setBusy(true);
+      setError(null);
+      revokeResultPreview();
+      setResult(null);
+      setProgress(0);
+      setProgressMessage('Starting…');
+      try {
+        const res = await compressImage(file, { quality, targetSizeBytes }, (fraction, message) => {
+          setProgress(fraction);
+          if (message) setProgressMessage(message);
+        });
+        setResult(res);
+        setProgress(1);
+        setProgressMessage('Done');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [file, isCompressible, revokeResultPreview],
+  );
 
   return (
     <div className="app">
@@ -92,8 +136,8 @@ export default function App() {
             Convert your files, <span>right in your browser</span>
           </h1>
           <p className="hero__subtitle">
-            Markdown, Word, PDF, HTML, text, CSV and JSON — fast, free, and
-            private. Nothing is uploaded to a server.
+            Markdown, Word, PDF, HTML, text, CSV, JSON, image conversion, and compression.
+            Fast, free, and private. Nothing is uploaded to a server.
           </p>
         </section>
 
@@ -104,7 +148,82 @@ export default function App() {
           </div>
           <Dropzone file={file} onFile={handleFile} onClear={handleClear} />
 
-          {sourceFormat && (
+          {file && isCompressible && (
+            <>
+              <div className="workspace__step">
+                <span className="step-badge">2</span>
+                <h2 className="workspace__heading">Choose an action</h2>
+              </div>
+              <div className="mode-selector" role="group" aria-label="Image action">
+                <button
+                  type="button"
+                  className={`mode-selector__option${imageMode === 'convert' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={imageMode === 'convert'}
+                  onClick={() => handleImageMode('convert')}
+                >
+                  <strong>Convert format</strong>
+                  <span>Change between JPG, PNG, and WebP</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mode-selector__option${imageMode === 'compress' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={imageMode === 'compress'}
+                  onClick={() => handleImageMode('compress')}
+                >
+                  <strong>Compress file size</strong>
+                  <span>Keep the format and reduce quality or target a size</span>
+                </button>
+              </div>
+
+              {imageMode === 'convert' ? (
+                <>
+                  <div className="workspace__step">
+                    <span className="step-badge">3</span>
+                    <h2 className="workspace__heading">Pick a target format</h2>
+                  </div>
+                  <FormatSelector
+                    sourceLabel={FORMATS[sourceFormat].label}
+                    routes={routes}
+                    selected={target}
+                    onSelect={setTarget}
+                  />
+                  <div className="workspace__step">
+                    <span className="step-badge">4</span>
+                    <h2 className="workspace__heading">Convert &amp; download</h2>
+                  </div>
+                  <ConvertPanel
+                    canConvert={!!target}
+                    busy={busy}
+                    progress={progress}
+                    progressMessage={progressMessage}
+                    error={error}
+                    hasResult={!!result}
+                    onConvert={handleConvert}
+                    onDownload={handleDownload}
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="workspace__step">
+                    <span className="step-badge">3</span>
+                    <h2 className="workspace__heading">Set compression target</h2>
+                  </div>
+                  <CompressionPanel
+                    file={file}
+                    busy={busy}
+                    progress={progress}
+                    progressMessage={progressMessage}
+                    error={error}
+                    hasResult={!!result}
+                    onCompress={handleCompress}
+                    onDownload={handleDownload}
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {!isCompressible && sourceFormat && (
             <>
               <div className="workspace__step">
                 <span className="step-badge">2</span>
@@ -116,7 +235,6 @@ export default function App() {
                 selected={target}
                 onSelect={setTarget}
               />
-
               <div className="workspace__step">
                 <span className="step-badge">3</span>
                 <h2 className="workspace__heading">Convert &amp; download</h2>
@@ -151,8 +269,8 @@ export default function App() {
           <div className="about-card__header">
             <h2 className="about-card__title">Owner and Organization</h2>
             <p className="about-card__subtitle">
-              Built and maintained by Cloud2BR Open Source Microsoft Cloud Sandbox
-              - Learning Hub.
+              Built and maintained by Cloud2BR Open Source Microsoft Cloud Sandbox,
+              Learning Hub.
             </p>
           </div>
 
@@ -186,14 +304,14 @@ export default function App() {
                 <img
                   className="about-profile__avatar about-profile__avatar--org"
                   src="https://github.com/Cloud2BR-MSFTLearningHub.png"
-                  alt="Cloud2BR Open Source Microsoft Cloud Sandbox - Learning Hub logo"
+                  alt="Cloud2BR Open Source Microsoft Cloud Sandbox, Learning Hub logo"
                   loading="lazy"
                   decoding="async"
                   referrerPolicy="no-referrer"
                 />
                 <div className="about-profile__meta">
                   <strong>Cloud2BR Open Source</strong>
-                  <span>Microsoft Cloud Sandbox - Learning Hub</span>
+                  <span>Microsoft Cloud Sandbox, Learning Hub</span>
                 </div>
               </div>
               <p className="about-profile__tagline">
