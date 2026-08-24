@@ -136,8 +136,8 @@ export default function App() {
             Convert your files, <span>right in your browser</span>
           </h1>
           <p className="hero__subtitle">
-            Markdown, Word, PDF, HTML, text, CSV, JSON, image conversion, and compression —
-            fast, free, and private. Nothing is uploaded to a server.
+            Markdown, Word, PDF, HTML, text, CSV, JSON, image conversion, and compression.
+            Fast, free, and private. Nothing is uploaded to a server.
           </p>
         </section>
 
@@ -269,8 +269,8 @@ export default function App() {
           <div className="about-card__header">
             <h2 className="about-card__title">Owner and Organization</h2>
             <p className="about-card__subtitle">
-              Built and maintained by Cloud2BR Open Source Microsoft Cloud Sandbox
-              - Learning Hub.
+              Built and maintained by Cloud2BR Open Source Microsoft Cloud Sandbox,
+              Learning Hub.
             </p>
           </div>
 
@@ -304,14 +304,14 @@ export default function App() {
                 <img
                   className="about-profile__avatar about-profile__avatar--org"
                   src="https://github.com/Cloud2BR-MSFTLearningHub.png"
-                  alt="Cloud2BR Open Source Microsoft Cloud Sandbox - Learning Hub logo"
+                  alt="Cloud2BR Open Source Microsoft Cloud Sandbox, Learning Hub logo"
                   loading="lazy"
                   decoding="async"
                   referrerPolicy="no-referrer"
                 />
                 <div className="about-profile__meta">
                   <strong>Cloud2BR Open Source</strong>
-                  <span>Microsoft Cloud Sandbox - Learning Hub</span>
+                  <span>Microsoft Cloud Sandbox, Learning Hub</span>
                 </div>
               </div>
               <p className="about-profile__tagline">

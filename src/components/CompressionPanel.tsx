@@ -12,9 +12,9 @@ interface CompressionPanelProps {
 }
 
 const RANGES = [
-  { label: 'Maximum quality', quality: 0.9, description: 'Best visual fidelity', range: '90–100%' },
-  { label: 'Balanced', quality: 0.7, description: 'Recommended for most images', range: '70–89%' },
-  { label: 'Smallest file', quality: 0.4, description: 'Prioritizes file size', range: '40–69%' },
+  { label: 'Maximum quality', quality: 0.9, description: 'Best visual fidelity', range: '90 to 100%' },
+  { label: 'Balanced', quality: 0.7, description: 'Recommended for most images', range: '70 to 89%' },
+  { label: 'Smallest file', quality: 0.4, description: 'Prioritizes file size', range: '40 to 69%' },
 ];
 
 export default function CompressionPanel({
