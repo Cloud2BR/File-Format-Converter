@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { saveAs } from 'file-saver';
 import type { ConversionResult } from '../converters/types';
 
@@ -7,6 +8,13 @@ interface PreviewProps {
 
 export default function Preview({ result }: PreviewProps) {
   const preview = result.preview;
+  useEffect(() => {
+    return () => {
+      if (preview?.kind === 'images') {
+        preview.urls.forEach((url) => URL.revokeObjectURL(url));
+      }
+    };
+  }, [preview]);
   if (!preview) {
     return (
       <div className="preview preview--empty">

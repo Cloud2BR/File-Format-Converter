@@ -30,6 +30,7 @@ import {
   textToPptx,
 } from './text';
 import { htmlToMarkdown } from './html';
+import { compressImage } from './compression';
 
 /** All available conversion routes keyed by source format. */
 export const ROUTES: Partial<Record<FormatId, ConversionRoute[]>> = {
@@ -94,3 +95,4 @@ export async function convert(
 
 export { FORMATS, detectFormat, getBaseName };
 export type { ConversionResult, FormatId };
+export { compressImage };
