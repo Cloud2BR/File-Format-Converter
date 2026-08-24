@@ -279,9 +279,10 @@ jobs:
           cp -r test-src/dist/. site/test/
           touch site/.nojekyll
 
-      - name: Verify compression mode is in Pages artifact
+      - name: Verify all-file compression is in Pages artifact
         run: |
-          grep -R -q "Compress image" site
+          grep -R -q "Compress file" site
+          grep -R -q "losslessly compressed ZIP" site
           grep -R -q "Maximum quality" site
 
       - name: Setup Pages
