@@ -85,7 +85,7 @@ export async function compressImage(
         high = candidateQuality;
       }
     }
-    if (blob.size > options.targetSizeBytes) blob = bestUnderTarget ?? smallest;
+    blob = bestUnderTarget ?? smallest;
   }
 
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';

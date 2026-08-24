@@ -17,12 +17,6 @@ const RANGES = [
   { label: 'Smallest file', quality: 0.4, description: 'Prioritizes file size', range: '40–69%' },
 ];
 
-function formatBytes(bytes: number): string {
-  return bytes >= 1024 * 1024
-    ? `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-    : `${Math.round(bytes / 1024)} KB`;
-}
-
 export default function CompressionPanel({
   file,
   busy,
@@ -83,7 +77,7 @@ export default function CompressionPanel({
           value={targetSize}
           disabled={isPng}
           onChange={(event) => setTargetSize(event.target.value)}
-          placeholder={formatBytes(file.size).replace(' ', '')}
+          placeholder={String(Math.max(1, Math.round(file.size / 1024)))}
         />
       </label>
       {isPng && <p className="compression-panel__hint">PNG compression stays lossless; size targeting is available for JPG and WebP.</p>}
