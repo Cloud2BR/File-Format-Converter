@@ -130,7 +130,7 @@ export default function App() {
           </div>
           <Dropzone file={file} onFile={handleFile} onClear={handleClear} />
 
-          {isCompressible && (
+          {file && isCompressible && (
             <>
               <div className="workspace__step">
                 <span className="step-badge">2</span>
