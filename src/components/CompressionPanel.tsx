@@ -47,13 +47,25 @@ export default function CompressionPanel({
         Choose a quality range, or set a maximum size. Compression runs locally in your browser.
       </p>
       <div className="compression-ranges" role="radiogroup" aria-label="Compression quality">
-        {RANGES.map((range) => (
+        {RANGES.map((range, index) => (
           <button
             key={range.label}
             type="button"
             role="radio"
             aria-checked={quality === range.quality}
             tabIndex={quality === range.quality ? 0 : -1}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+              event.preventDefault();
+              const nextIndex =
+                (index + (event.key === 'ArrowRight' ? 1 : -1) + RANGES.length) %
+                RANGES.length;
+              const next = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+                '[role="radio"]',
+              )[nextIndex];
+              next?.focus();
+              next?.click();
+            }}
             className={`format-chip${quality === range.quality ? ' format-chip--active' : ''}`}
             onClick={() => setQuality(range.quality)}
           >

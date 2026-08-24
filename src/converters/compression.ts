@@ -69,7 +69,7 @@ export async function compressImage(
   if (options.targetSizeBytes && type !== 'image/png' && blob.size > options.targetSizeBytes) {
     let low = 0.4;
     let high = quality;
-    let smallest = blob;
+    let smallest = await canvasBlob(canvas, type, low);
     for (let attempt = 0; attempt < 8; attempt++) {
       const candidateQuality = (low + high) / 2;
       const candidate = await canvasBlob(canvas, type, candidateQuality);
