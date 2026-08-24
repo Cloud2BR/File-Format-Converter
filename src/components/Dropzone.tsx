@@ -72,6 +72,7 @@ export default function Dropzone({ file, onFile, onClear }: DropzoneProps) {
         ref={inputRef}
         type="file"
         hidden
+        accept=".md,.markdown,.mdown,.mkd,.docx,.pdf,.html,.htm,.txt,.text,.csv,.json,.pptx,.jpg,.jpeg,.png,.webp"
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           const picked = e.target.files?.[0];
           if (picked) onFile(picked);

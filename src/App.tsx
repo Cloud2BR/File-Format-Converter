@@ -50,7 +50,7 @@ export default function App() {
       setTarget(available[0]?.target ?? null);
       if (!fmt || !available.length) {
         setError(
-          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, or JSON.`,
+          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, JSON, JPG, PNG, or WebP.`,
         );
       }
     },
@@ -125,8 +125,8 @@ export default function App() {
             Convert your files, <span>right in your browser</span>
           </h1>
           <p className="hero__subtitle">
-            Markdown, Word, PDF, HTML, text, CSV and JSON — fast, free, and
-            private. Nothing is uploaded to a server.
+            Markdown, Word, PDF, HTML, text, CSV, JSON, and image compression —
+            fast, free, and private. Nothing is uploaded to a server.
           </p>
         </section>
 
