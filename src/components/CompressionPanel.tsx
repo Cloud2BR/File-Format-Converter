@@ -58,7 +58,7 @@ export default function CompressionPanel({
                 '[role="radio"]',
               )[nextIndex];
               next?.focus();
-              next?.click();
+              setQuality(RANGES[nextIndex].quality);
             }}
             className={`format-chip${quality === range.quality ? ' format-chip--active' : ''}`}
             onClick={() => setQuality(range.quality)}
