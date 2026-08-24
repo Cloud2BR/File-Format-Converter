@@ -279,10 +279,10 @@ jobs:
           cp -r test-src/dist/. site/test/
           touch site/.nojekyll
 
-      - name: Verify all-file compression is in Pages artifact
+      - name: Verify same-format compression is in Pages artifact
         run: |
           grep -R -q "Compress file" site
-          grep -R -q "losslessly compressed ZIP" site
+          grep -R -q "Download in the original file format" site
           grep -R -q "Maximum quality" site
 
       - name: Setup Pages

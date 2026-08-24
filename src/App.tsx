@@ -173,7 +173,7 @@ export default function App() {
                   onClick={() => handleActionMode('compress')}
                 >
                   <strong>Compress file size</strong>
-                  <span>{isImage ? 'Compress in the original format and package as ZIP' : 'Create a losslessly compressed ZIP file'}</span>
+                  <span>{isImage ? 'Keep the image format and reduce its size' : 'Download in the original file format'}</span>
                 </button>
               </div>
 

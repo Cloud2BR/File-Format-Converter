@@ -31,28 +31,27 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 | Plain text     | Markdown, HTML, PDF, PowerPoint                      |
 | CSV            | JSON                                                 |
 | JSON           | CSV                                                  |
-| JPG, PNG, WebP | JPG, PNG, WebP, or a compressed ZIP with the image in its original format |
+| JPG, PNG, WebP | JPG, PNG, WebP, or a compressed image in its original format |
 
-Every supported upload also has a **Compress file size** mode that downloads a
-ZIP. JPG, PNG, and WebP use native image compression before the image is placed
-in the archive with its original extension. Markdown, Word, PDF, HTML, text,
-CSV, JSON, and PowerPoint are compressed losslessly into a ZIP that contains
-the original file with its name and format unchanged.
+Every supported upload also has a **Compress file size** mode whose download
+keeps the uploaded extension. JPG, PNG, and WebP use native image compression.
+Word and PowerPoint packages are recompressed losslessly in their original
+format. Formats without safe native browser recompression are preserved
+byte-for-byte rather than being renamed or wrapped in a ZIP.
 
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.
 >
 > Images have two modes: **Convert format** changes between JPG, PNG, and WebP,
-> while **Compress file size** keeps the original format inside the downloaded
-> ZIP. Choose maximum quality, balanced, or smallest-file ranges, or provide a
-> target size in KB or MB.
+> while **Compress file size** keeps the uploaded extension. Choose maximum
+> quality, balanced, or smallest-file ranges, or provide a target size in KB or
+> MB.
 > Target-size matching is best effort and can reduce image dimensions when quality
 > reduction alone is insufficient. PNG remains lossless; convert it to JPG or WebP
 > when a specific smaller target is required.
 >
-> Lossless ZIP compression cannot guarantee a target size. Formats that are already
-> compressed internally, including PDF, Word, and PowerPoint, may not become
-> significantly smaller.
+> Same-format compression cannot guarantee a smaller result. Formats that are
+> already compressed internally may not become significantly smaller.
 
 ## How it works
 

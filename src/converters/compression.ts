@@ -12,6 +12,11 @@ const IMAGE_TYPES: Record<string, string> = {
   webp: 'image/webp',
 };
 
+const OFFICE_PACKAGE_TYPES: Record<string, string> = {
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+};
+
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -127,6 +132,10 @@ export async function compressImage(
     blob = bestUnderTarget ?? blob;
   }
 
+  if (blob.size >= file.size) {
+    blob = file;
+  }
+
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
   return {
     blob,
@@ -135,53 +144,48 @@ export async function compressImage(
   };
 }
 
-async function createZip(
-  content: Blob,
-  contentFilename: string,
-  zipFilename: string,
+async function compressOfficePackage(
+  file: File,
+  extension: string,
   onProgress?: (fraction: number, message?: string) => void,
 ): Promise<ConversionResult> {
-  const zip = new JSZip();
-  zip.file(contentFilename, content);
+  onProgress?.(0.1, 'Reading document package…');
+  const zip = await JSZip.loadAsync(file);
   const blob = await zip.generateAsync(
     {
       type: 'blob',
       compression: 'DEFLATE',
       compressionOptions: { level: 9 },
-      mimeType: 'application/zip',
+      mimeType: OFFICE_PACKAGE_TYPES[extension],
     },
-    ({ percent }) => onProgress?.(percent / 100, 'Compressing file…'),
+    ({ percent }) => onProgress?.(0.1 + (percent / 100) * 0.9, 'Compressing document…'),
   );
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
   return {
     blob,
-    filename: zipFilename,
+    filename: `${baseName}-compressed.${extension}`,
   };
 }
 
-/** Compress any supported upload into a ZIP without sending it outside the browser. */
-export async function compressFile(
+/** Prepare any supported upload in its original format without sending it outside the browser. */
+export function compressFile(
   file: File,
   options: CompressionOptions,
   onProgress?: (fraction: number, message?: string) => void,
 ): Promise<ConversionResult> {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
-  const zipFilename = `${baseName}-compressed.zip`;
 
-  if (!IMAGE_TYPES[extension]) {
-    return createZip(file, file.name, zipFilename, onProgress);
+  if (IMAGE_TYPES[extension]) {
+    return compressImage(file, options, onProgress);
+  }
+  if (OFFICE_PACKAGE_TYPES[extension]) {
+    return compressOfficePackage(file, extension, onProgress);
   }
 
-  const compressed = await compressImage(file, options, (fraction, message) => {
-    onProgress?.(fraction * 0.8, message);
+  onProgress?.(1, 'Original format preserved');
+  return Promise.resolve({
+    blob: file,
+    filename: `${baseName}-compressed.${extension}`,
   });
-  if (compressed.preview?.kind === 'images') {
-    compressed.preview.urls.forEach((url) => URL.revokeObjectURL(url));
-  }
-  return createZip(
-    compressed.blob,
-    compressed.filename,
-    zipFilename,
-    (fraction) => onProgress?.(0.8 + fraction * 0.2, 'Creating ZIP…'),
-  );
 }
