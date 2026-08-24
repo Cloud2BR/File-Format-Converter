@@ -1,5 +1,6 @@
 import type {
   CompressionOptions,
+  ConversionContext,
   ConversionResult,
 } from './types';
 
@@ -40,6 +41,36 @@ function canvasBlob(
   });
 }
 
+function drawImage(image: HTMLImageElement, scale = 1): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Unable to create canvas context.');
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+async function convertImage(
+  ctx: ConversionContext,
+  extension: 'jpg' | 'png' | 'webp',
+): Promise<ConversionResult> {
+  const image = await loadImage(ctx.file);
+  const canvas = drawImage(image);
+  ctx.onProgress?.(0.5, `Converting to ${extension.toUpperCase()}…`);
+  const blob = await canvasBlob(canvas, IMAGE_TYPES[extension], extension === 'png' ? 1 : 0.92);
+  ctx.onProgress?.(1, 'Done');
+  return {
+    blob,
+    filename: `${ctx.baseName}.${extension}`,
+    preview: { kind: 'images', urls: [URL.createObjectURL(blob)] },
+  };
+}
+
+export const imageToJpg = (ctx: ConversionContext) => convertImage(ctx, 'jpg');
+export const imageToPng = (ctx: ConversionContext) => convertImage(ctx, 'png');
+export const imageToWebp = (ctx: ConversionContext) => convertImage(ctx, 'webp');
+
 /**
  * Compress a raster image locally. Lossy formats use a quality search when a
  * maximum size is supplied; PNG remains lossless because canvas ignores PNG
@@ -55,19 +86,14 @@ export async function compressImage(
   if (!type) throw new Error('Compression supports JPG, PNG, and WebP images.');
 
   const image = await loadImage(file);
-  const canvas = document.createElement('canvas');
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
-  const context = canvas.getContext('2d');
-  if (!context) throw new Error('Unable to create canvas context.');
-  context.drawImage(image, 0, 0);
+  let canvas = drawImage(image);
 
-  const quality = Math.min(1, Math.max(0.4, options.quality));
+  const quality = Math.min(1, Math.max(0.1, options.quality));
   let blob = await canvasBlob(canvas, type, quality);
   onProgress?.(0.35, 'Compressing image…');
 
   if (options.targetSizeBytes && type !== 'image/png' && blob.size > options.targetSizeBytes) {
-    let low = 0.4;
+    let low = 0.1;
     let high = quality;
     let smallest = await canvasBlob(canvas, type, low);
     let bestUnderTarget: Blob | null =
@@ -86,6 +112,18 @@ export async function compressImage(
       }
     }
     blob = bestUnderTarget ?? smallest;
+
+    let scale = 1;
+    for (let resizeAttempt = 0; !bestUnderTarget && resizeAttempt < 8; resizeAttempt++) {
+      const estimatedScale = Math.sqrt(options.targetSizeBytes / Math.max(1, blob.size)) * 0.95;
+      scale *= Math.min(0.9, Math.max(0.35, estimatedScale));
+      canvas = drawImage(image, scale);
+      const candidate = await canvasBlob(canvas, type, low);
+      if (candidate.size < blob.size) blob = candidate;
+      if (candidate.size <= options.targetSizeBytes) bestUnderTarget = candidate;
+      onProgress?.(0.9 + ((resizeAttempt + 1) / 8) * 0.09, 'Reducing image dimensions…');
+    }
+    blob = bestUnderTarget ?? blob;
   }
 
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';

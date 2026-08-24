@@ -12,6 +12,7 @@ import type { ConversionResult, FormatId } from './converters/types';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
+  const [imageMode, setImageMode] = useState<'convert' | 'compress'>('convert');
   const [target, setTarget] = useState<FormatId | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -34,6 +35,7 @@ export default function App() {
   );
 
   const reset = useCallback(() => {
+    setImageMode('convert');
     setTarget(null);
     setError(null);
     setResult(null);
@@ -61,6 +63,15 @@ export default function App() {
     setFile(null);
     reset();
   }, [reset]);
+
+  const handleImageMode = useCallback((mode: 'convert' | 'compress') => {
+    revokeResultPreview();
+    setImageMode(mode);
+    setError(null);
+    setResult(null);
+    setProgress(0);
+    setProgressMessage('');
+  }, [revokeResultPreview]);
 
   const handleConvert = useCallback(async () => {
     if (!file || !target) return;
@@ -125,7 +136,7 @@ export default function App() {
             Convert your files, <span>right in your browser</span>
           </h1>
           <p className="hero__subtitle">
-            Markdown, Word, PDF, HTML, text, CSV, JSON, and image compression —
+            Markdown, Word, PDF, HTML, text, CSV, JSON, image conversion, and compression —
             fast, free, and private. Nothing is uploaded to a server.
           </p>
         </section>
@@ -141,18 +152,74 @@ export default function App() {
             <>
               <div className="workspace__step">
                 <span className="step-badge">2</span>
-                <h2 className="workspace__heading">Compress image</h2>
+                <h2 className="workspace__heading">Choose an action</h2>
               </div>
-              <CompressionPanel
-                file={file}
-                busy={busy}
-                progress={progress}
-                progressMessage={progressMessage}
-                error={error}
-                hasResult={!!result}
-                onCompress={handleCompress}
-                onDownload={handleDownload}
-              />
+              <div className="mode-selector" role="group" aria-label="Image action">
+                <button
+                  type="button"
+                  className={`mode-selector__option${imageMode === 'convert' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={imageMode === 'convert'}
+                  onClick={() => handleImageMode('convert')}
+                >
+                  <strong>Convert format</strong>
+                  <span>Change between JPG, PNG, and WebP</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mode-selector__option${imageMode === 'compress' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={imageMode === 'compress'}
+                  onClick={() => handleImageMode('compress')}
+                >
+                  <strong>Compress file size</strong>
+                  <span>Keep the format and reduce quality or target a size</span>
+                </button>
+              </div>
+
+              {imageMode === 'convert' ? (
+                <>
+                  <div className="workspace__step">
+                    <span className="step-badge">3</span>
+                    <h2 className="workspace__heading">Pick a target format</h2>
+                  </div>
+                  <FormatSelector
+                    sourceLabel={FORMATS[sourceFormat].label}
+                    routes={routes}
+                    selected={target}
+                    onSelect={setTarget}
+                  />
+                  <div className="workspace__step">
+                    <span className="step-badge">4</span>
+                    <h2 className="workspace__heading">Convert &amp; download</h2>
+                  </div>
+                  <ConvertPanel
+                    canConvert={!!target}
+                    busy={busy}
+                    progress={progress}
+                    progressMessage={progressMessage}
+                    error={error}
+                    hasResult={!!result}
+                    onConvert={handleConvert}
+                    onDownload={handleDownload}
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="workspace__step">
+                    <span className="step-badge">3</span>
+                    <h2 className="workspace__heading">Set compression target</h2>
+                  </div>
+                  <CompressionPanel
+                    file={file}
+                    busy={busy}
+                    progress={progress}
+                    progressMessage={progressMessage}
+                    error={error}
+                    hasResult={!!result}
+                    onCompress={handleCompress}
+                    onDownload={handleDownload}
+                  />
+                </>
+              )}
             </>
           )}
 

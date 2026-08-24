@@ -58,9 +58,9 @@ export const FORMATS: Record<FormatId, FormatMeta> = {
   },
   png: {
     id: 'png',
-    label: 'Images (per page)',
+    label: 'PNG image',
     extensions: ['png'],
-    description: 'Preview & download each page individually',
+    description: 'Lossless raster image (.png)',
   },
   jpg: {
     id: 'jpg',

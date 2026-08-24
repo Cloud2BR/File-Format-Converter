@@ -29,11 +29,13 @@ export default function CompressionPanel({
 }: CompressionPanelProps) {
   const [quality, setQuality] = useState(0.7);
   const [targetSize, setTargetSize] = useState('');
+  const [targetUnit, setTargetUnit] = useState<'KB' | 'MB'>('MB');
   const isPng = file.name.toLowerCase().endsWith('.png');
   const targetBytes = useMemo(() => {
     const value = Number(targetSize);
-    return Number.isFinite(value) && value > 0 ? value * 1024 : null;
-  }, [targetSize]);
+    const multiplier = targetUnit === 'MB' ? 1024 * 1024 : 1024;
+    return Number.isFinite(value) && value > 0 ? value * multiplier : null;
+  }, [targetSize, targetUnit]);
 
   return (
     <div className="compression-panel">
@@ -68,19 +70,26 @@ export default function CompressionPanel({
           </button>
         ))}
       </div>
-      <label className="compression-target">
-        Maximum size (KB, optional)
+      <div className="compression-target">
+        <label htmlFor="maximum-size">Maximum size (optional)</label>
         <input
+          id="maximum-size"
           type="number"
-          min="1"
-          step="1"
+          min="0.01"
+          step="0.01"
           value={targetSize}
           disabled={isPng}
           onChange={(event) => setTargetSize(event.target.value)}
-          placeholder={String(Math.max(1, Math.round(file.size / 1024)))}
+          placeholder={targetUnit === 'MB' ? (file.size / 1024 / 1024).toFixed(1) : String(Math.max(1, Math.round(file.size / 1024)))}
         />
-      </label>
-      {isPng && <p className="compression-panel__hint">PNG compression stays lossless; size targeting is available for JPG and WebP.</p>}
+        <select value={targetUnit} disabled={isPng} onChange={(event) => setTargetUnit(event.target.value as 'KB' | 'MB')} aria-label="Target size unit">
+          <option value="KB">KB</option>
+          <option value="MB">MB</option>
+        </select>
+      </div>
+      {isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
+      {!isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
+      {!isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
       <div className="convert-panel__actions">
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => onCompress(quality, targetBytes)}>
           {busy ? 'Compressing…' : 'Compress image'}
