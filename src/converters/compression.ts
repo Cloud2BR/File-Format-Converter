@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import type {
   CompressionOptions,
   ConversionContext,
@@ -132,4 +133,38 @@ export async function compressImage(
     filename: `${baseName}-compressed.${extension}`,
     preview: { kind: 'images', urls: [URL.createObjectURL(blob)] },
   };
+}
+
+async function compressToZip(
+  file: File,
+  onProgress?: (fraction: number, message?: string) => void,
+): Promise<ConversionResult> {
+  const zip = new JSZip();
+  zip.file(file.name, file);
+  const blob = await zip.generateAsync(
+    {
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 9 },
+      mimeType: 'application/zip',
+    },
+    ({ percent }) => onProgress?.(percent / 100, 'Compressing file…'),
+  );
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
+  return {
+    blob,
+    filename: `${baseName}-compressed.zip`,
+  };
+}
+
+/** Compress any supported upload without sending it outside the browser. */
+export function compressFile(
+  file: File,
+  options: CompressionOptions,
+  onProgress?: (fraction: number, message?: string) => void,
+): Promise<ConversionResult> {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return IMAGE_TYPES[extension]
+    ? compressImage(file, options, onProgress)
+    : compressToZip(file, onProgress);
 }

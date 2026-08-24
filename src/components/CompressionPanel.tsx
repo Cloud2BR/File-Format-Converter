@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 interface CompressionPanelProps {
   file: File;
+  isImage: boolean;
   busy: boolean;
   progress: number;
   progressMessage: string;
@@ -19,6 +20,7 @@ const RANGES = [
 
 export default function CompressionPanel({
   file,
+  isImage,
   busy,
   progress,
   progressMessage,
@@ -40,9 +42,11 @@ export default function CompressionPanel({
   return (
     <div className="compression-panel">
       <p className="compression-panel__intro">
-        Choose a quality range, or set a maximum size. Compression runs locally in your browser.
+        {isImage
+          ? 'Choose a quality range, or set a maximum size. Compression runs locally in your browser.'
+          : 'Create a losslessly compressed ZIP containing the original file. Compression runs locally in your browser.'}
       </p>
-      <div className="compression-ranges" role="radiogroup" aria-label="Compression quality">
+      {isImage && <div className="compression-ranges" role="radiogroup" aria-label="Compression quality">
         {RANGES.map((range, index) => (
           <button
             key={range.label}
@@ -69,8 +73,8 @@ export default function CompressionPanel({
             <span className="format-chip__desc">{range.description} · {range.range}</span>
           </button>
         ))}
-      </div>
-      <div className="compression-target">
+      </div>}
+      {isImage && <div className="compression-target">
         <label htmlFor="maximum-size">Maximum size (optional)</label>
         <input
           id="maximum-size"
@@ -86,13 +90,14 @@ export default function CompressionPanel({
           <option value="KB">KB</option>
           <option value="MB">MB</option>
         </select>
-      </div>
-      {isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
-      {!isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
-      {!isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
+      </div>}
+      {isImage && isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
+      {isImage && !isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
+      {isImage && !isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
+      {!isImage && <p className="compression-panel__hint">Already compressed formats such as PDF, DOCX, and PPTX may not become significantly smaller.</p>}
       <div className="convert-panel__actions">
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => onCompress(quality, targetBytes)}>
-          {busy ? 'Compressing…' : 'Compress image'}
+          {busy ? 'Compressing…' : 'Compress file'}
         </button>
         {hasResult && <button type="button" className="btn btn--success" onClick={onDownload} disabled={busy}>Download result</button>}
       </div>

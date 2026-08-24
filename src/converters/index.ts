@@ -31,6 +31,7 @@ import {
 } from './text';
 import { htmlToMarkdown } from './html';
 import {
+  compressFile,
   compressImage,
   imageToJpg,
   imageToPng,
@@ -112,4 +113,4 @@ export async function convert(
 
 export { FORMATS, detectFormat, getBaseName };
 export type { ConversionResult, FormatId };
-export { compressImage };
+export { compressFile, compressImage };

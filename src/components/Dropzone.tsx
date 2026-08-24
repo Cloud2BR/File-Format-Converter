@@ -100,7 +100,7 @@ export default function Dropzone({ file, onFile, onClear }: DropzoneProps) {
         Drop a file here, or <span>browse</span>
       </p>
       <p className="dropzone__hint">
-        Markdown · Word · PDF · HTML · text · CSV · JSON · JPG · PNG · WebP
+        Markdown · Word · PDF · HTML · text · CSV · JSON · PowerPoint · JPG · PNG · WebP
       </p>
     </div>
   );

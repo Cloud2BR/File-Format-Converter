@@ -33,6 +33,11 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 | JSON           | CSV                                                  |
 | JPG, PNG, WebP | JPG, PNG, WebP, or a compressed image with a target size |
 
+Every supported upload also has a **Compress file size** mode. JPG, PNG, and
+WebP use native image compression and keep their image format. Markdown, Word,
+PDF, HTML, text, CSV, JSON, and PowerPoint are compressed losslessly into a ZIP
+that contains the original file.
+
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.
 >
@@ -42,6 +47,10 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 > Target-size matching is best effort and can reduce image dimensions when quality
 > reduction alone is insufficient. PNG remains lossless; convert it to JPG or WebP
 > when a specific smaller target is required.
+>
+> Lossless ZIP compression cannot guarantee a target size. Formats that are already
+> compressed internally, including PDF, Word, and PowerPoint, may not become
+> significantly smaller.
 
 ## How it works
 

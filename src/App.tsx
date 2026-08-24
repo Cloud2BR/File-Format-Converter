@@ -7,12 +7,12 @@ import ConvertPanel from './components/ConvertPanel';
 import CompressionPanel from './components/CompressionPanel';
 import Preview from './components/Preview';
 import Footer from './components/Footer';
-import { compressImage, convert, detectFormat, FORMATS, getRoutes } from './converters';
+import { compressFile, convert, detectFormat, FORMATS, getRoutes } from './converters';
 import type { ConversionResult, FormatId } from './converters/types';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [imageMode, setImageMode] = useState<'convert' | 'compress'>('convert');
+  const [actionMode, setActionMode] = useState<'convert' | 'compress'>('convert');
   const [target, setTarget] = useState<FormatId | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -23,7 +23,7 @@ export default function App() {
     () => (file ? detectFormat(file.name) : null),
     [file],
   );
-  const isCompressible = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
+  const isImage = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
   const revokeResultPreview = useCallback(() => {
     if (result?.preview?.kind === 'images') {
       result.preview.urls.forEach((url) => URL.revokeObjectURL(url));
@@ -35,7 +35,7 @@ export default function App() {
   );
 
   const reset = useCallback(() => {
-    setImageMode('convert');
+    setActionMode('convert');
     setTarget(null);
     setError(null);
     setResult(null);
@@ -50,9 +50,10 @@ export default function App() {
       const fmt = detectFormat(next.name);
       const available = fmt ? getRoutes(fmt) : [];
       setTarget(available[0]?.target ?? null);
-      if (!fmt || !available.length) {
+      if (fmt && !available.length) setActionMode('compress');
+      if (!fmt) {
         setError(
-          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, JSON, JPG, PNG, or WebP.`,
+          `"${next.name}" isn't a supported input type. Try Markdown, Word, PDF, HTML, text, CSV, JSON, PowerPoint, JPG, PNG, or WebP.`,
         );
       }
     },
@@ -64,9 +65,9 @@ export default function App() {
     reset();
   }, [reset]);
 
-  const handleImageMode = useCallback((mode: 'convert' | 'compress') => {
+  const handleActionMode = useCallback((mode: 'convert' | 'compress') => {
     revokeResultPreview();
-    setImageMode(mode);
+    setActionMode(mode);
     setError(null);
     setResult(null);
     setProgress(0);
@@ -102,7 +103,7 @@ export default function App() {
 
   const handleCompress = useCallback(
     async (quality: number, targetSizeBytes: number | null) => {
-      if (!file || !isCompressible) return;
+      if (!file || !sourceFormat) return;
       setBusy(true);
       setError(null);
       revokeResultPreview();
@@ -110,7 +111,7 @@ export default function App() {
       setProgress(0);
       setProgressMessage('Starting…');
       try {
-        const res = await compressImage(file, { quality, targetSizeBytes }, (fraction, message) => {
+        const res = await compressFile(file, { quality, targetSizeBytes }, (fraction, message) => {
           setProgress(fraction);
           if (message) setProgressMessage(message);
         });
@@ -123,7 +124,7 @@ export default function App() {
         setBusy(false);
       }
     },
-    [file, isCompressible, revokeResultPreview],
+    [file, revokeResultPreview, sourceFormat],
   );
 
   return (
@@ -148,34 +149,35 @@ export default function App() {
           </div>
           <Dropzone file={file} onFile={handleFile} onClear={handleClear} />
 
-          {file && isCompressible && (
+          {file && sourceFormat && (
             <>
               <div className="workspace__step">
                 <span className="step-badge">2</span>
                 <h2 className="workspace__heading">Choose an action</h2>
               </div>
-              <div className="mode-selector" role="group" aria-label="Image action">
+              <div className="mode-selector" role="group" aria-label="File action">
                 <button
                   type="button"
-                  className={`mode-selector__option${imageMode === 'convert' ? ' mode-selector__option--active' : ''}`}
-                  aria-pressed={imageMode === 'convert'}
-                  onClick={() => handleImageMode('convert')}
+                  className={`mode-selector__option${actionMode === 'convert' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={actionMode === 'convert'}
+                  disabled={!routes.length}
+                  onClick={() => handleActionMode('convert')}
                 >
                   <strong>Convert format</strong>
-                  <span>Change between JPG, PNG, and WebP</span>
+                  <span>{isImage ? 'Change between JPG, PNG, and WebP' : 'Change to another available format'}</span>
                 </button>
                 <button
                   type="button"
-                  className={`mode-selector__option${imageMode === 'compress' ? ' mode-selector__option--active' : ''}`}
-                  aria-pressed={imageMode === 'compress'}
-                  onClick={() => handleImageMode('compress')}
+                  className={`mode-selector__option${actionMode === 'compress' ? ' mode-selector__option--active' : ''}`}
+                  aria-pressed={actionMode === 'compress'}
+                  onClick={() => handleActionMode('compress')}
                 >
                   <strong>Compress file size</strong>
-                  <span>Keep the format and reduce quality or target a size</span>
+                  <span>{isImage ? 'Keep the format and reduce quality or target a size' : 'Create a losslessly compressed ZIP file'}</span>
                 </button>
               </div>
 
-              {imageMode === 'convert' ? (
+              {actionMode === 'convert' ? (
                 <>
                   <div className="workspace__step">
                     <span className="step-badge">3</span>
@@ -210,6 +212,7 @@ export default function App() {
                   </div>
                   <CompressionPanel
                     file={file}
+                    isImage={isImage}
                     busy={busy}
                     progress={progress}
                     progressMessage={progressMessage}
@@ -220,35 +223,6 @@ export default function App() {
                   />
                 </>
               )}
-            </>
-          )}
-
-          {!isCompressible && sourceFormat && (
-            <>
-              <div className="workspace__step">
-                <span className="step-badge">2</span>
-                <h2 className="workspace__heading">Pick a target format</h2>
-              </div>
-              <FormatSelector
-                sourceLabel={FORMATS[sourceFormat].label}
-                routes={routes}
-                selected={target}
-                onSelect={setTarget}
-              />
-              <div className="workspace__step">
-                <span className="step-badge">3</span>
-                <h2 className="workspace__heading">Convert &amp; download</h2>
-              </div>
-              <ConvertPanel
-                canConvert={!!target}
-                busy={busy}
-                progress={progress}
-                progressMessage={progressMessage}
-                error={error}
-                hasResult={!!result}
-                onConvert={handleConvert}
-                onDownload={handleDownload}
-              />
             </>
           )}
 
