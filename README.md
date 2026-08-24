@@ -17,8 +17,8 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 
 | Branch | Environment | Description                                                 | URL                                                                                                                                              |
 | ------ | ----------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `main` | Production  | Stable release served at the site root.                     | [https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/](https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/)           |
-| `test` | Staging     | Preview of in-progress work served under the `/test/` path. | [https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/test/](https://Cloud2BR-MSFTLearningHub.github.io/File-Format-Converter/test/) |
+| `main` | Production  | Stable release served at the site root.                     | [File Converter](https://cloud2br.github.io/File-Format-Converter/)
+| `test` | Staging     | Preview of in-progress work served under the `/test/` path. | [File Converter Test](https://cloud2br.github.io/File-Format-Converter/test/) |
 
 ## Supported conversions
 
