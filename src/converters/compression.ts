@@ -17,6 +17,35 @@ const OFFICE_PACKAGE_TYPES: Record<string, string> = {
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
 
+const TEXT_TYPES: Record<string, string> = {
+  md: 'text/markdown',
+  markdown: 'text/markdown',
+  mdown: 'text/markdown',
+  mkd: 'text/markdown',
+  html: 'text/html',
+  htm: 'text/html',
+  txt: 'text/plain',
+  text: 'text/plain',
+  csv: 'text/csv',
+  json: 'application/json',
+};
+
+function compressedFilename(file: File, extension: string): string {
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
+  return `${baseName}-compressed.${extension}`;
+}
+
+function smallerResult(
+  file: File,
+  candidate: Blob,
+  extension: string,
+): ConversionResult {
+  return {
+    blob: candidate.size < file.size ? candidate : file,
+    filename: compressedFilename(file, extension),
+  };
+}
+
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -160,11 +189,49 @@ async function compressOfficePackage(
     },
     ({ percent }) => onProgress?.(0.1 + (percent / 100) * 0.9, 'Compressing document…'),
   );
-  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
-  return {
-    blob,
-    filename: `${baseName}-compressed.${extension}`,
-  };
+  return smallerResult(file, blob, extension);
+}
+
+async function compressPdf(
+  file: File,
+  onProgress?: (fraction: number, message?: string) => void,
+): Promise<ConversionResult> {
+  onProgress?.(0.1, 'Reading PDF…');
+  const { PDFDocument } = await import('pdf-lib');
+  const source = await PDFDocument.load(await file.arrayBuffer(), {
+    ignoreEncryption: false,
+    updateMetadata: false,
+  });
+  onProgress?.(0.5, 'Compressing PDF structure…');
+  const bytes = await source.save({
+    addDefaultPage: false,
+    useObjectStreams: true,
+    updateFieldAppearances: false,
+  });
+  onProgress?.(1, 'Done');
+  return smallerResult(
+    file,
+    new Blob([Uint8Array.from(bytes).buffer], { type: 'application/pdf' }),
+    'pdf',
+  );
+}
+
+async function compressTextFile(
+  file: File,
+  extension: string,
+  onProgress?: (fraction: number, message?: string) => void,
+): Promise<ConversionResult> {
+  onProgress?.(0.25, 'Reading text…');
+  const original = await file.text();
+  let compact = original.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+
+  if (extension === 'json') {
+    compact = JSON.stringify(JSON.parse(compact));
+  }
+
+  onProgress?.(1, 'Done');
+  const blob = new Blob([compact], { type: file.type || TEXT_TYPES[extension] });
+  return smallerResult(file, blob, extension);
 }
 
 /** Prepare any supported upload in its original format without sending it outside the browser. */
@@ -182,8 +249,14 @@ export function compressFile(
   if (OFFICE_PACKAGE_TYPES[extension]) {
     return compressOfficePackage(file, extension, onProgress);
   }
+  if (extension === 'pdf') {
+    return compressPdf(file, onProgress);
+  }
+  if (TEXT_TYPES[extension]) {
+    return compressTextFile(file, extension, onProgress);
+  }
 
-  onProgress?.(1, 'Original format preserved');
+  onProgress?.(1, 'No smaller valid representation found');
   return Promise.resolve({
     blob: file,
     filename: `${baseName}-compressed.${extension}`,

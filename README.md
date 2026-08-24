@@ -36,8 +36,10 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 Every supported upload also has a **Compress file size** mode whose download
 keeps the uploaded extension. JPG, PNG, and WebP use native image compression.
 Word and PowerPoint packages are recompressed losslessly in their original
-format. Formats without safe native browser recompression are preserved
-byte-for-byte rather than being renamed or wrapped in a ZIP.
+format. PDFs are rewritten with compressed object streams, JSON is compacted,
+and text-based formats use safe encoding and line-ending normalization. Every
+path keeps the original extension and falls back to the upload when optimization
+would make the result larger.
 
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.

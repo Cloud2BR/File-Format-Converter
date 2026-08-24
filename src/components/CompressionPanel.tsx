@@ -94,7 +94,7 @@ export default function CompressionPanel({
       {isImage && isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
       {isImage && !isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
       {isImage && !isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
-      {!isImage && <p className="compression-panel__hint">DOCX and PPTX packages are recompressed losslessly. Other formats are preserved byte-for-byte when safe native recompression is unavailable.</p>}
+      {!isImage && <p className="compression-panel__hint">PDF, Office, JSON, and text-based files use format-safe optimization. Already optimized files may remain the same size.</p>}
       <div className="convert-panel__actions">
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => onCompress(quality, targetBytes)}>
           {busy ? 'Compressing…' : 'Compress file'}
