@@ -135,12 +135,14 @@ export async function compressImage(
   };
 }
 
-async function compressToZip(
-  file: File,
+async function createZip(
+  content: Blob,
+  contentFilename: string,
+  zipFilename: string,
   onProgress?: (fraction: number, message?: string) => void,
 ): Promise<ConversionResult> {
   const zip = new JSZip();
-  zip.file(file.name, file);
+  zip.file(contentFilename, content);
   const blob = await zip.generateAsync(
     {
       type: 'blob',
@@ -150,21 +152,36 @@ async function compressToZip(
     },
     ({ percent }) => onProgress?.(percent / 100, 'Compressing file…'),
   );
-  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
   return {
     blob,
-    filename: `${baseName}-compressed.zip`,
+    filename: zipFilename,
   };
 }
 
-/** Compress any supported upload without sending it outside the browser. */
-export function compressFile(
+/** Compress any supported upload into a ZIP without sending it outside the browser. */
+export async function compressFile(
   file: File,
   options: CompressionOptions,
   onProgress?: (fraction: number, message?: string) => void,
 ): Promise<ConversionResult> {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-  return IMAGE_TYPES[extension]
-    ? compressImage(file, options, onProgress)
-    : compressToZip(file, onProgress);
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
+  const zipFilename = `${baseName}-compressed.zip`;
+
+  if (!IMAGE_TYPES[extension]) {
+    return createZip(file, file.name, zipFilename, onProgress);
+  }
+
+  const compressed = await compressImage(file, options, (fraction, message) => {
+    onProgress?.(fraction * 0.8, message);
+  });
+  if (compressed.preview?.kind === 'images') {
+    compressed.preview.urls.forEach((url) => URL.revokeObjectURL(url));
+  }
+  return createZip(
+    compressed.blob,
+    compressed.filename,
+    zipFilename,
+    (fraction) => onProgress?.(0.8 + fraction * 0.2, 'Creating ZIP…'),
+  );
 }

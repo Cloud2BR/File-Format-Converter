@@ -43,7 +43,7 @@ export default function CompressionPanel({
     <div className="compression-panel">
       <p className="compression-panel__intro">
         {isImage
-          ? 'Choose a quality range, or set a maximum size. Compression runs locally in your browser.'
+          ? 'Choose a quality range or maximum size. The compressed image keeps its original format inside a ZIP.'
           : 'Create a losslessly compressed ZIP containing the original file. Compression runs locally in your browser.'}
       </p>
       {isImage && <div className="compression-ranges" role="radiogroup" aria-label="Compression quality">
@@ -94,7 +94,7 @@ export default function CompressionPanel({
       {isImage && isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
       {isImage && !isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
       {isImage && !isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
-      {!isImage && <p className="compression-panel__hint">Already compressed formats such as PDF, DOCX, and PPTX may not become significantly smaller.</p>}
+      {!isImage && <p className="compression-panel__hint">The file keeps its original name and format inside the ZIP. Already compressed formats such as PDF, DOCX, and PPTX may not become significantly smaller.</p>}
       <div className="convert-panel__actions">
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => onCompress(quality, targetBytes)}>
           {busy ? 'Compressing…' : 'Compress file'}
