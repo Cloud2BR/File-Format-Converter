@@ -53,6 +53,7 @@ export default function CompressionPanel({
             type="button"
             role="radio"
             aria-checked={quality === range.quality}
+            tabIndex={quality === range.quality ? 0 : -1}
             className={`format-chip${quality === range.quality ? ' format-chip--active' : ''}`}
             onClick={() => setQuality(range.quality)}
           >
