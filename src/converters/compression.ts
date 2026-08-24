@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { renderPdfPagesAsJpegs } from './pdf';
 import type {
   CompressionOptions,
   ConversionContext,
@@ -29,6 +30,8 @@ const TEXT_TYPES: Record<string, string> = {
   csv: 'text/csv',
   json: 'application/json',
 };
+
+const PDF_SIZE_LIMIT_BYTES = 25 * 1024 * 1024;
 
 function compressedFilename(file: File, extension: string): string {
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';
@@ -194,6 +197,7 @@ async function compressOfficePackage(
 
 async function compressPdf(
   file: File,
+  targetSizeBytes: number | null,
   onProgress?: (fraction: number, message?: string) => void,
 ): Promise<ConversionResult> {
   onProgress?.(0.1, 'Reading PDF…');
@@ -208,11 +212,53 @@ async function compressPdf(
     useObjectStreams: true,
     updateFieldAppearances: false,
   });
-  onProgress?.(1, 'Done');
-  return smallerResult(
+  const structuralResult = smallerResult(
     file,
     new Blob([Uint8Array.from(bytes).buffer], { type: 'application/pdf' }),
     'pdf',
+  );
+  if (!targetSizeBytes || structuralResult.blob.size <= targetSizeBytes) {
+    onProgress?.(1, 'Done');
+    return structuralResult;
+  }
+
+  let scale = 1.25;
+  let quality = 0.76;
+  let smallest: Blob | null = null;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    onProgress?.(0.2 + attempt * 0.2, 'Reducing PDF page images…');
+    const pages = await renderPdfPagesAsJpegs(
+      file,
+      scale,
+      quality,
+      (fraction, message) => onProgress?.(0.2 + attempt * 0.2 + fraction * 0.18, message),
+    );
+    const flattened = await PDFDocument.create();
+    for (const page of pages) {
+      const image = await flattened.embedJpg(await page.blob.arrayBuffer());
+      const outputPage = flattened.addPage([page.width, page.height]);
+      outputPage.drawImage(image, { x: 0, y: 0, width: page.width, height: page.height });
+    }
+    const flattenedBytes = await flattened.save({ useObjectStreams: true });
+    const candidate = new Blob([Uint8Array.from(flattenedBytes).buffer], {
+      type: 'application/pdf',
+    });
+    if (!smallest || candidate.size < smallest.size) smallest = candidate;
+    if (candidate.size <= targetSizeBytes) {
+      onProgress?.(1, 'Done');
+      return {
+        blob: candidate,
+        filename: compressedFilename(file, 'pdf'),
+      };
+    }
+    const estimate = Math.sqrt(targetSizeBytes / candidate.size) * 0.9;
+    scale *= Math.min(0.85, Math.max(0.4, estimate));
+    quality = Math.max(0.3, quality - 0.12);
+  }
+
+  const bestSize = smallest ? (smallest.size / 1024 / 1024).toFixed(1) : 'unknown';
+  throw new Error(
+    `This PDF could not be reduced below 25 MB while preserving readable pages. The smallest result was ${bestSize} MB.`,
   );
 }
 
@@ -250,7 +296,11 @@ export function compressFile(
     return compressOfficePackage(file, extension, onProgress);
   }
   if (extension === 'pdf') {
-    return compressPdf(file, onProgress);
+    return compressPdf(
+      file,
+      options.targetSizeBytes === PDF_SIZE_LIMIT_BYTES ? PDF_SIZE_LIMIT_BYTES : null,
+      onProgress,
+    );
   }
   if (TEXT_TYPES[extension]) {
     return compressTextFile(file, extension, onProgress);

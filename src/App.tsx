@@ -24,6 +24,7 @@ export default function App() {
     [file],
   );
   const isImage = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
+  const isPdf = sourceFormat === 'pdf';
   const revokeResultPreview = useCallback(() => {
     if (result?.preview?.kind === 'images') {
       result.preview.urls.forEach((url) => URL.revokeObjectURL(url));
@@ -213,6 +214,7 @@ export default function App() {
                   <CompressionPanel
                     file={file}
                     isImage={isImage}
+                    isPdf={isPdf}
                     busy={busy}
                     progress={progress}
                     progressMessage={progressMessage}

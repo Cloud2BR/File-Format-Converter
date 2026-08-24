@@ -41,6 +41,11 @@ and text-based formats use safe encoding and line-ending normalization. Every
 path keeps the original extension and falls back to the upload when optimization
 would make the result larger.
 
+PDF compression also includes an optional **Reduce PDF below 25 MB** mode. It
+first uses lossless structural compression. When needed, it rebuilds the PDF
+from JPEG page images at a lower resolution to meet the 25 MB maximum; this
+removes selectable text, links, and form fields.
+
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.
 >

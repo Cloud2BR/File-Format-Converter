@@ -283,6 +283,7 @@ jobs:
         run: |
           grep -R -q "Compress file" site
           grep -R -q "Download in the original file format" site
+          grep -R -q "Reduce PDF below 25 MB" site
           grep -R -q "Maximum quality" site
 
       - name: Setup Pages

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 interface CompressionPanelProps {
   file: File;
   isImage: boolean;
+  isPdf: boolean;
   busy: boolean;
   progress: number;
   progressMessage: string;
@@ -21,6 +22,7 @@ const RANGES = [
 export default function CompressionPanel({
   file,
   isImage,
+  isPdf,
   busy,
   progress,
   progressMessage,
@@ -32,12 +34,14 @@ export default function CompressionPanel({
   const [quality, setQuality] = useState(0.7);
   const [targetSize, setTargetSize] = useState('');
   const [targetUnit, setTargetUnit] = useState<'KB' | 'MB'>('MB');
+  const [limitPdfTo25Mb, setLimitPdfTo25Mb] = useState(false);
   const isPng = file.name.toLowerCase().endsWith('.png');
-  const targetBytes = useMemo(() => {
+  const imageTargetBytes = useMemo(() => {
     const value = Number(targetSize);
     const multiplier = targetUnit === 'MB' ? 1024 * 1024 : 1024;
     return Number.isFinite(value) && value > 0 ? value * multiplier : null;
   }, [targetSize, targetUnit]);
+  const targetBytes = isPdf && limitPdfTo25Mb ? 25 * 1024 * 1024 : imageTargetBytes;
 
   return (
     <div className="compression-panel">
@@ -91,10 +95,19 @@ export default function CompressionPanel({
           <option value="MB">MB</option>
         </select>
       </div>}
+      {isPdf && <label className="compression-panel__limit">
+        <input
+          type="checkbox"
+          checked={limitPdfTo25Mb}
+          onChange={(event) => setLimitPdfTo25Mb(event.target.checked)}
+        />
+        <span>Reduce PDF below 25 MB</span>
+      </label>}
       {isImage && isPng && <p className="compression-panel__hint">PNG stays lossless. Convert it to JPG or WebP first to target a smaller file size.</p>}
       {isImage && !isPng && targetBytes && targetBytes >= file.size && <p className="compression-panel__hint">The target is not smaller than the original file, so quality settings will determine the result.</p>}
       {isImage && !isPng && targetBytes && <p className="compression-panel__hint">Target size is best effort. Very small targets may reduce image dimensions to preserve a usable result.</p>}
       {!isImage && <p className="compression-panel__hint">PDF, Office, JSON, and text-based files use format-safe optimization. Already optimized files may remain the same size.</p>}
+      {isPdf && limitPdfTo25Mb && <p className="compression-panel__hint">If lossless PDF compression is not enough, this mode flattens pages to JPEG images to meet the limit. Text selection, links, and form fields are removed.</p>}
       <div className="convert-panel__actions">
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => onCompress(quality, targetBytes)}>
           {busy ? 'Compressing…' : 'Compress file'}

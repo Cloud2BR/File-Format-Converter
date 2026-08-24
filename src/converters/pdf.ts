@@ -44,6 +44,48 @@ async function renderPages(
   return { blobs, urls };
 }
 
+export interface RenderedPdfPage {
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
+/** Render PDF pages as JPEGs for the explicit size-limit compression mode. */
+export async function renderPdfPagesAsJpegs(
+  file: File,
+  scale: number,
+  quality: number,
+  onProgress?: (fraction: number, message?: string) => void,
+): Promise<RenderedPdfPage[]> {
+  const data = await readArrayBuffer(file);
+  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pages: RenderedPdfPage[] = [];
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const pageSize = page.getViewport({ scale: 1 });
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Unable to create canvas context.');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({ canvasContext: context, viewport }).promise;
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (result) => (result ? resolve(result) : reject(new Error('JPEG export failed.'))),
+        'image/jpeg',
+        quality,
+      );
+    });
+    pages.push({ blob, width: pageSize.width, height: pageSize.height });
+    onProgress?.(pageNum / pdf.numPages, `Rendering page ${pageNum} of ${pdf.numPages}`);
+  }
+
+  return pages;
+}
+
 /** PDF -> ZIP archive of one PNG per page. */
 export async function pdfToImagesZip(
   ctx: ConversionContext,
