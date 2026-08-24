@@ -31,9 +31,14 @@ The project is deployed to GitHub Pages via GitHub Actions, with two environment
 | Plain text     | Markdown, HTML, PDF, PowerPoint                      |
 | CSV            | JSON                                                 |
 | JSON           | CSV                                                  |
+| JPG, PNG, WebP | Compressed image with selectable quality or target size |
 
 > [!NOTE]
 > PDF → images renders each page to PNG. You can preview and save pages individually, and also download a ZIP containing every page.
+>
+> Image compression supports JPG, PNG, and WebP. Choose maximum quality, balanced,
+> or smallest-file ranges, or provide a target size in KB. Compression runs locally;
+> PNG remains lossless and target-size matching is available for JPG and WebP.
 
 ## How it works
 

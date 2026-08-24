@@ -4,9 +4,10 @@ import Header from './components/Header';
 import Dropzone from './components/Dropzone';
 import FormatSelector from './components/FormatSelector';
 import ConvertPanel from './components/ConvertPanel';
+import CompressionPanel from './components/CompressionPanel';
 import Preview from './components/Preview';
 import Footer from './components/Footer';
-import { convert, detectFormat, FORMATS, getRoutes } from './converters';
+import { compressImage, convert, detectFormat, FORMATS, getRoutes } from './converters';
 import type { ConversionResult, FormatId } from './converters/types';
 
 export default function App() {
@@ -17,11 +18,11 @@ export default function App() {
   const [progressMessage, setProgressMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConversionResult | null>(null);
-
   const sourceFormat = useMemo<FormatId | null>(
     () => (file ? detectFormat(file.name) : null),
     [file],
   );
+  const isCompressible = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
   const routes = useMemo(
     () => (sourceFormat ? getRoutes(sourceFormat) : []),
     [sourceFormat],
@@ -82,6 +83,31 @@ export default function App() {
     if (result) saveAs(result.blob, result.filename);
   }, [result]);
 
+  const handleCompress = useCallback(
+    async (quality: number, targetSizeBytes: number | null) => {
+      if (!file || !isCompressible) return;
+      setBusy(true);
+      setError(null);
+      setResult(null);
+      setProgress(0);
+      setProgressMessage('Starting…');
+      try {
+        const res = await compressImage(file, { quality, targetSizeBytes }, (fraction, message) => {
+          setProgress(fraction);
+          if (message) setProgressMessage(message);
+        });
+        setResult(res);
+        setProgress(1);
+        setProgressMessage('Done');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [file, isCompressible],
+  );
+
   return (
     <div className="app">
       <Header />
@@ -104,7 +130,26 @@ export default function App() {
           </div>
           <Dropzone file={file} onFile={handleFile} onClear={handleClear} />
 
-          {sourceFormat && (
+          {isCompressible && (
+            <>
+              <div className="workspace__step">
+                <span className="step-badge">2</span>
+                <h2 className="workspace__heading">Compress image</h2>
+              </div>
+              <CompressionPanel
+                file={file}
+                busy={busy}
+                progress={progress}
+                progressMessage={progressMessage}
+                error={error}
+                hasResult={!!result}
+                onCompress={handleCompress}
+                onDownload={handleDownload}
+              />
+            </>
+          )}
+
+          {!isCompressible && sourceFormat && (
             <>
               <div className="workspace__step">
                 <span className="step-badge">2</span>
@@ -116,7 +161,6 @@ export default function App() {
                 selected={target}
                 onSelect={setTarget}
               />
-
               <div className="workspace__step">
                 <span className="step-badge">3</span>
                 <h2 className="workspace__heading">Convert &amp; download</h2>
