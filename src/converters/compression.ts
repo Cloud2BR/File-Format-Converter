@@ -70,6 +70,8 @@ export async function compressImage(
     let low = 0.4;
     let high = quality;
     let smallest = await canvasBlob(canvas, type, low);
+    let bestUnderTarget: Blob | null =
+      smallest.size <= options.targetSizeBytes ? smallest : null;
     for (let attempt = 0; attempt < 8; attempt++) {
       const candidateQuality = (low + high) / 2;
       const candidate = await canvasBlob(canvas, type, candidateQuality);
@@ -77,12 +79,13 @@ export async function compressImage(
       onProgress?.(0.35 + ((attempt + 1) / 8) * 0.55, 'Matching target size…');
       if (candidate.size <= options.targetSizeBytes) {
         blob = candidate;
+        bestUnderTarget = candidate;
         low = candidateQuality;
       } else {
         high = candidateQuality;
       }
     }
-    if (blob.size > options.targetSizeBytes) blob = smallest;
+    if (blob.size > options.targetSizeBytes) blob = bestUnderTarget ?? smallest;
   }
 
   const baseName = file.name.replace(/\.[^.]+$/, '') || 'compressed';

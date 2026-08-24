@@ -23,6 +23,11 @@ export default function App() {
     [file],
   );
   const isCompressible = sourceFormat === 'jpg' || sourceFormat === 'webp' || sourceFormat === 'png';
+  const revokeResultPreview = useCallback(() => {
+    if (result?.preview?.kind === 'images') {
+      result.preview.urls.forEach((url) => URL.revokeObjectURL(url));
+    }
+  }, [result]);
   const routes = useMemo(
     () => (sourceFormat ? getRoutes(sourceFormat) : []),
     [sourceFormat],
@@ -61,6 +66,7 @@ export default function App() {
     if (!file || !target) return;
     setBusy(true);
     setError(null);
+    revokeResultPreview();
     setResult(null);
     setProgress(0);
     setProgressMessage('Starting…');
@@ -77,7 +83,7 @@ export default function App() {
     } finally {
       setBusy(false);
     }
-  }, [file, target]);
+  }, [file, revokeResultPreview, target]);
 
   const handleDownload = useCallback(() => {
     if (result) saveAs(result.blob, result.filename);
@@ -88,6 +94,7 @@ export default function App() {
       if (!file || !isCompressible) return;
       setBusy(true);
       setError(null);
+      revokeResultPreview();
       setResult(null);
       setProgress(0);
       setProgressMessage('Starting…');
@@ -105,7 +112,7 @@ export default function App() {
         setBusy(false);
       }
     },
-    [file, isCompressible],
+    [file, isCompressible, revokeResultPreview],
   );
 
   return (

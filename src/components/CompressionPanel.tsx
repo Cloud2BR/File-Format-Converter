@@ -93,7 +93,7 @@ export default function CompressionPanel({
         </button>
         {hasResult && <button type="button" className="btn btn--success" onClick={onDownload} disabled={busy}>Download result</button>}
       </div>
-      {busy && <div className="progress" role="progressbar" aria-valuenow={Math.round(progress * 100)}>
+      {busy && <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
         <div className="progress__bar" style={{ width: `${Math.max(8, progress * 100)}%` }} />
         <span className="progress__label">{progressMessage || 'Working…'}</span>
       </div>}
