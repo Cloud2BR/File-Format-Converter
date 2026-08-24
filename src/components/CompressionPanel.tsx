@@ -55,10 +55,10 @@ export default function CompressionPanel({
             aria-checked={quality === range.quality}
             tabIndex={quality === range.quality ? 0 : -1}
             onKeyDown={(event) => {
-              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+              if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
               event.preventDefault();
               const nextIndex =
-                (index + (event.key === 'ArrowRight' ? 1 : -1) + RANGES.length) %
+                (index + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1) + RANGES.length) %
                 RANGES.length;
               const next = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
                 '[role="radio"]',
