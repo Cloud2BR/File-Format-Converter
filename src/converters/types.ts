@@ -12,6 +12,13 @@ export type FormatId =
   | 'png-zip'
   | 'png';
 
+export interface CompressionOptions {
+  /** Output quality from 0.4 to 1.0 for lossy image formats. */
+  quality: number;
+  /** Desired maximum size in bytes, or null to use the quality setting. */
+  targetSizeBytes: number | null;
+}
+
 export interface FormatMeta {
   id: FormatId;
   label: string;

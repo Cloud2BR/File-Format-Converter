@@ -62,6 +62,18 @@ export const FORMATS: Record<FormatId, FormatMeta> = {
     extensions: ['png'],
     description: 'Preview & download each page individually',
   },
+  jpg: {
+    id: 'jpg',
+    label: 'JPEG image',
+    extensions: ['jpg', 'jpeg'],
+    description: 'Compressed raster image (.jpg, .jpeg)',
+  },
+  webp: {
+    id: 'webp',
+    label: 'WebP image',
+    extensions: ['webp'],
+    description: 'Modern compressed raster image (.webp)',
+  },
 };
 
 const EXTENSION_LOOKUP: Record<string, FormatId> = (() => {
