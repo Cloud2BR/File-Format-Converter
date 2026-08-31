@@ -133,14 +133,18 @@ export default function App() {
       <Header />
 
       <main className="app__main">
-        <section className="hero">
-          <h1 className="hero__title">
-            Convert your files, <span>right in your browser</span>
-          </h1>
-          <p className="hero__subtitle">
-            Markdown, Word, PDF, HTML, text, CSV, JSON, image conversion, and compression.
-            Fast, free, and private. Nothing is uploaded to a server.
-          </p>
+        <section className="tool-intro">
+          <div>
+            <p className="eyebrow">Private browser workspace</p>
+            <h1>File format converter</h1>
+            <p>
+              Convert or compress documents and images without uploading them.
+            </p>
+          </div>
+          <span className="privacy-mark">
+            <span aria-hidden="true">✓</span>
+            Local only
+          </span>
         </section>
 
         <section className="workspace card">
@@ -241,70 +245,6 @@ export default function App() {
           </section>
         )}
 
-        <section className="card about-card" aria-label="Owner and organization">
-          <div className="about-card__header">
-            <h2 className="about-card__title">Owner and Organization</h2>
-            <p className="about-card__subtitle">
-              Built and maintained by Cloud2BR Open Source Microsoft Cloud Sandbox,
-              Learning Hub.
-            </p>
-          </div>
-
-          <div className="about-card__grid">
-            <article className="about-profile">
-              <span className="about-profile__label">Owner / Founder</span>
-              <div className="about-profile__main">
-                <img
-                  className="about-profile__avatar"
-                  src="https://github.com/brown9804.png"
-                  alt="Photo of @brown9804"
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="about-profile__meta">
-                  <strong>@brown9804</strong>
-                  <span>Creator and maintainer</span>
-                </div>
-              </div>
-              <div className="about-profile__links">
-                <a href="https://github.com/brown9804" target="_blank" rel="noreferrer">
-                  GitHub
-                </a>
-              </div>
-            </article>
-
-            <article className="about-profile">
-              <span className="about-profile__label">Organization</span>
-              <div className="about-profile__main">
-                <img
-                  className="about-profile__avatar about-profile__avatar--org"
-                  src="https://github.com/Cloud2BR-MSFTLearningHub.png"
-                  alt="Cloud2BR Open Source Microsoft Cloud Sandbox, Learning Hub logo"
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="about-profile__meta">
-                  <strong>Cloud2BR Open Source</strong>
-                  <span>Microsoft Cloud Sandbox, Learning Hub</span>
-                </div>
-              </div>
-              <p className="about-profile__tagline">
-                Community demos, learning assets, and lightweight browser tools.
-              </p>
-              <div className="about-profile__links">
-                <a
-                  href="https://github.com/Cloud2BR-MSFTLearningHub"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Organization page
-                </a>
-              </div>
-            </article>
-          </div>
-        </section>
       </main>
 
       <Footer />

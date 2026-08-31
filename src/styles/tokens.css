@@ -1,49 +1,51 @@
 :root {
-  /* Surfaces — light backdrop per requirement */
-  --bg: #f7f8fc;
+  /* Cloud2BR organization palette */
+  --bg: #f4f7f8;
   --surface: #ffffff;
-  --surface-alt: #f3f4f8;
-  --surface-sunken: #eef0f6;
+  --surface-alt: #f8fafb;
+  --surface-sunken: #edf3f7;
 
   /* Text */
-  --text: #1f2430;
-  --text-muted: #5b6271;
-  --text-faint: #8b91a1;
+  --text: #15232d;
+  --text-muted: #5c6c76;
+  --text-faint: #7b8991;
 
   /* Borders */
-  --border: #e4e7f0;
-  --border-strong: #d3d8e6;
+  --border: #d6e0e5;
+  --border-strong: #9fb4c2;
 
   /* Brand / accent colors (used on header, buttons, outputs) */
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-soft: #eef0ff;
-  --accent-2: #c2724f; /* warm terracotta from org branding */
-  --accent-2-soft: #f7ede7;
+  --accent: #007f8b;
+  --accent-hover: #006b74;
+  --accent-soft: #e7f5f4;
+  --accent-2: #004a99;
+  --accent-2-soft: #eaf2fa;
+  --brand-navy: #003366;
+  --brand-blue: #004a99;
+  --brand-blue-hover: #003874;
 
   /* Status */
-  --success: #15a06b;
-  --success-soft: #e6f6ee;
-  --danger: #d6455d;
+  --success: #287a55;
+  --success-soft: #e8f4ed;
+  --danger: #a13f55;
   --danger-soft: #fcebee;
   --warning: #c98a1b;
 
   /* Gradients for header / hero accents */
-  --grad-brand: linear-gradient(120deg, #1d4ed8 0%, #2563eb 45%, #3b82f6 100%);
-  --grad-soft: linear-gradient(135deg, #eef0ff 0%, #f7ede7 100%);
+  --grad-brand: linear-gradient(120deg, #003366 0%, #004a99 100%);
+  --grad-soft: linear-gradient(135deg, #edf7f6 0%, #eaf2fa 100%);
 
   /* Shape & elevation */
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 22px;
-  --shadow-sm: 0 1px 2px rgba(31, 36, 48, 0.06);
-  --shadow: 0 6px 20px rgba(31, 36, 48, 0.08);
-  --shadow-lg: 0 18px 48px rgba(31, 36, 48, 0.14);
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 51, 102, 0.06);
+  --shadow: 0 7px 18px rgba(0, 51, 102, 0.08);
+  --shadow-lg: 0 18px 48px rgba(0, 38, 77, 0.16);
 
   /* Typography */
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
-  --font-mono: 'SF Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
 
 * {
